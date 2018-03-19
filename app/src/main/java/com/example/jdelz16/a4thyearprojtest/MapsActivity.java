@@ -415,12 +415,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         public void onSuccess(Void aVoid) {
                                             Toast.makeText(MapsActivity.this, "Stay and wait for your buddy!!", Toast.LENGTH_LONG).show();
                                             //mTextViewCountdown.setVisibility(View.VISIBLE);
+                                            lv.setVisibility(textView.INVISIBLE);
+                                            startTimer();
                                         }
                                     });
                                 }
                             }
                         } else {
                             acceptBuddy.setVisibility(View.GONE);
+                            mTextViewCountdown.setVisibility(View.GONE);
                         }
                     }
 
@@ -477,8 +480,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        startTimer();
-
     }
 
 
@@ -532,7 +533,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 public void run() {
                                     acceptBuddy.setVisibility(View.VISIBLE);
                                 }
-                            }, 15000);
+                            }, 5000);
                         }
                         else {
                             Toast.makeText(MapsActivity.this, "You sent a buddy request", Toast.LENGTH_SHORT).show();
@@ -609,6 +610,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
    public void searchForBuddy(){
        String prefDistance = editDistancePref.getText().toString().trim();
+
+       mTextViewCountdown.setVisibility(textView.INVISIBLE);
 
        refDatabase = FirebaseDatabase.getInstance().getReference().child("users");
        refDatabase.orderByChild("availability").equalTo("yes").addListenerForSingleValueEvent(new ValueEventListener() {
