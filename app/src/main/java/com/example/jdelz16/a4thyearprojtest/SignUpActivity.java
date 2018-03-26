@@ -21,7 +21,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class SignUpActivity extends AppCompatActivity {
-    EditText emailUser, passReg, username;
+    EditText emailUser, passReg;
     Button  regToFirebase, cancel;
 
     FirebaseAuth mAuth;

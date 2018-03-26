@@ -1,4 +1,7 @@
 <resources>
-    <string name="app_name">4thYearProjTest</string>
+    <string name="app_name">ExerciseBuddy</string>
     <string name="title_activity_maps">Map</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="signin">SignIn</string>
 </resources>
