@@ -31,7 +31,7 @@ import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends AppCompatActivity implements  SensorEventListener, StepListener {
     Button mapsBtn, start, stop, logout;
-    TextView textView, distance;
+    TextView textView, distance, calories;
 
     //firebase objects
     FirebaseAuth mAuth;
@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements  SensorEventListe
     Sensor accel;
     static final String TEXT_NUM_STEPS = "Number of Steps: ";
     static final String DISTANCE_TRAVELLED = "km";
+    static final String CALORIES_BURNED = "calories burned";
     int numSteps;
 
     @Override
@@ -86,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements  SensorEventListe
         simpleStepDetector.registerListener(this);
         textView = (TextView)findViewById(R.id.count);
         distance = (TextView)findViewById(R.id.distance);
+        calories = (TextView)findViewById(R.id.calBurned);
 
         logout = (Button)findViewById(R.id.logoutBtn);
         start = (Button) findViewById(R.id.start);
@@ -149,9 +151,10 @@ public class MainActivity extends AppCompatActivity implements  SensorEventListe
     @Override
     public void step(long timeNs) {
         numSteps++;
-        textView.setText(TEXT_NUM_STEPS + numSteps);
+        textView.setText(numSteps + " " + "steps");
 
-        distance.setText(String.valueOf(getDistanceRun(numSteps)) +DISTANCE_TRAVELLED);
+        distance.setText(String.format("%.2f", getDistanceRun(numSteps)) + " " +DISTANCE_TRAVELLED);
+        calories.setText(String.format("%.2f", (numSteps*.045)) + " " +CALORIES_BURNED);
     }
 
     //function to determine the distance run in kilometers using average step length and number of steps
