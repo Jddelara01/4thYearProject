@@ -22,6 +22,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -74,7 +75,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
-    private EditText editUserName, editDistancePref, editAvailability, editExerciseType;
+    private EditText editUserName, editDistancePref;
+    private Spinner editAvailability, editExerciseType;
     private TextView mTextViewCountdown;
     private CountDownTimer mCountDownTimer;
     private long mTimeLeftInMillis;
@@ -124,8 +126,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         databaseReference = FirebaseDatabase.getInstance().getReference();
         editUserName = (EditText) findViewById(R.id.edit_userName);
         editDistancePref = (EditText) findViewById(R.id.edit_distancePref);
-        editAvailability = (EditText) findViewById(R.id.available);
-        editExerciseType = (EditText) findViewById(R.id.exerciseType);
+        editAvailability = (Spinner) findViewById(R.id.available);
+        editExerciseType = (Spinner) findViewById(R.id.exerciseType);
         lookForBuddy = (Button)findViewById(R.id.lookButton);
         cancelBuddy = (Button)findViewById(R.id.cancelButton);
         acceptBuddy = (Button)findViewById(R.id.acceptButton);
@@ -143,6 +145,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         polylines = new ArrayList<>();
 
         buddy_state = "not buddies";
+
+        ArrayAdapter<String> myAdapterAvail = new ArrayAdapter<String>(MapsActivity.this,
+                android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.availabilities));
+        myAdapterAvail.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        editAvailability.setAdapter(myAdapterAvail);
+
+        ArrayAdapter<String> myAdapterEx = new ArrayAdapter<String>(MapsActivity.this,
+                android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.exerciseTypes));
+        myAdapterAvail.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        editExerciseType.setAdapter(myAdapterEx);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -192,8 +204,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                     else {
                         String uName = editUserName.getText().toString().trim();
-                        String availability = editAvailability.getText().toString().trim();
-                        String exerciseType = editExerciseType.getText().toString().trim();
+                        String availability = editAvailability.getSelectedItem().toString();
+                        String exerciseType = editExerciseType.getSelectedItem().toString();
+
+
 
                         UserInformation userInformation = new UserInformation();
 
@@ -349,7 +363,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         lookForBuddy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 if(editUserName.getText().toString().matches("") ){
                     Toast.makeText(MapsActivity.this, "Please enter a Name", Toast.LENGTH_SHORT).show();
                 } else {
@@ -477,6 +490,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         cancelBuddy.setVisibility(View.GONE);
                     }
                 });
+
+                mMap.clear();
+                polylines.clear();
             }
         });
 
@@ -533,7 +549,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 public void run() {
                                     acceptBuddy.setVisibility(View.VISIBLE);
                                 }
-                            }, 5000);
+                            }, 3000);
                         }
                         else {
                             Toast.makeText(MapsActivity.this, "You sent a buddy request", Toast.LENGTH_SHORT).show();
@@ -563,7 +579,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                    for (DataSnapshot ds : dataSnapshot.getChildren()){
                        Buddy_req budReq = ds.getValue(Buddy_req.class);
 
-                       if(budReq.getRequestType().equals(mCurrent_user.getUid().toString()) && budReq.getTimer() > 0){
+                       if(budReq.getRequestType().equals(mCurrent_user.getUid().toString()) && budReq.getTimer() > 0 && budReq.receiverReply.equals("yes")){
                            Toast.makeText(MapsActivity.this, "Timer will be displayed", Toast.LENGTH_SHORT).show();
 
                            //countdowntimer start
@@ -628,7 +644,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                        if (userInfo.getExerciseType().equals(uExerciseType)) {
                            double mylat = userInfo.getLatitude();
                            double mylong = userInfo.getLongtitude();
-                           String exTitle = ds.child("exerciseType").getValue(String.class);
+                           String exTitle = ds.child("userName").getValue(String.class);
 
                            String forUNameList = ds.child("userName").getValue(String.class);
 
@@ -664,7 +680,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                            //getRouteToMarker(newLocation);
 
-                           mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLang, 12.2f));
+                           mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLang, 11.2f));
                        }
 
                    }
@@ -690,27 +706,59 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String result1;
+
                 if (dataSnapshot.exists()) {
                     result.clear();
                     for(DataSnapshot ds : dataSnapshot.getChildren()) {
                         Buddy_req buddy_req = new Buddy_req();
 
-                        result1 = ds.child("uniqueID").getValue(String.class);
+                        if(ds.child("availability").getValue(String.class).equals("no")){
+                            Toast.makeText(MapsActivity.this, "User not available.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            result1 = ds.child("uniqueID").getValue(String.class);
 
-                        showRoute(result1);
-                        Log.d("TIMER: " , String.valueOf(routeTimer));
+                            showRoute(result1);
+                            Log.d("TIMER: ", String.valueOf(routeTimer));
 
-                        buddy_req.setRequestType(result1);
-                        buddy_req.setUniqueIdentifier(mCurrent_user.getUid().toString());
-                        buddy_req.setReceiverReply("no");
-                        buddy_req.setTimer(routeTimer);
+                            buddy_req.setRequestType(result1);
+                            buddy_req.setUniqueIdentifier(mCurrent_user.getUid().toString());
+                            buddy_req.setReceiverReply("no");
+                            buddy_req.setTimer(routeTimer);
 
-                        databaseReference.child("buddyReq").child(mCurrent_user.getUid()).setValue(buddy_req).addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                cancelBuddy.setVisibility(View.VISIBLE);
-                            }
-                        });
+                            final String finalResult = result1;
+
+                            Log.d("finalResult", finalResult);
+                            databaseReference.child("buddyReq").child(mCurrent_user.getUid()).setValue(buddy_req).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    cancelBuddy.setVisibility(View.VISIBLE);
+
+                                    refDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            if (dataSnapshot.exists()){
+                                                for(DataSnapshot ds : dataSnapshot.getChildren()) {
+                                                    if(ds.child("uniqueID").getValue(String.class).equals(mCurrent_user.getUid().toString())) {
+                                                        ds.child("availability").getRef().setValue("no");
+                                                    }
+
+                                                    if(ds.child("uniqueID").getValue(String.class).equals(finalResult)) {
+                                                        ds.child("availability").getRef().setValue("no");
+                                                    }
+                                                }
+                                            } else {
+                                                Log.d("User change", "User changed");
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+
+                                        }
+                                    });
+                                }
+                            });
+                        }
                     }
                 }
             };
@@ -770,35 +818,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
             refDatabase.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if(dataSnapshot.exists()){
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
 
-                        Log.d("CheckforID", mCurrent_user.getUid().toString());
+                            Log.d("CheckforID", mCurrent_user.getUid().toString());
 
-                        for (DataSnapshot ds : dataSnapshot.getChildren()){
-                            Buddy_req budReq = ds.getValue(Buddy_req.class);
+                            for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                                Buddy_req budReq = ds.getValue(Buddy_req.class);
 
-                            if(budReq.getRequestType().equals(mCurrent_user.getUid().toString())){
-                                ds.child("timer").getRef().setValue(routeTimer).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Toast.makeText(MapsActivity.this, "Timer changed", Toast.LENGTH_LONG).show();
+                                if (budReq.getRequestType().equals(mCurrent_user.getUid().toString())) {
+                                    ds.child("timer").getRef().setValue(routeTimer).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Toast.makeText(MapsActivity.this, "Timer changed", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                } else {
+                                    Toast.makeText(MapsActivity.this, "Didnt Work", Toast.LENGTH_SHORT).show();
                                 }
-                                });
-                            }
-                            else {
-                                Toast.makeText(MapsActivity.this, "Didnt Work", Toast.LENGTH_SHORT).show();
                             }
                         }
                     }
-                }
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
 
-                }
-            });
+                    }
+                });
         }
 
     }
@@ -810,8 +857,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void showRoute(String buddy) {
 
-        Toast.makeText(this, "ROUTing", Toast.LENGTH_LONG).show();
-        refDatabase.orderByChild("uniqueID").equalTo(buddy).addValueEventListener(new ValueEventListener() {
+        Toast.makeText(this, "Routing", Toast.LENGTH_SHORT).show();
+        refDatabase.orderByChild("uniqueID").equalTo(buddy).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){

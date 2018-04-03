@@ -24,14 +24,10 @@
         android:layout_alignParentStart="true"
         android:layout_below="@+id/map"
         android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         android:hint="Name"
         map:layout_constraintEnd_toEndOf="parent"
-        map:layout_constraintHorizontal_bias="1.0"
-        map:layout_constraintLeft_toLeftOf="parent"
         map:layout_constraintRight_toRightOf="parent"
-        map:layout_constraintStart_toStartOf="parent"
         map:layout_constraintTop_toBottomOf="@+id/map" />
 
     <EditText
@@ -41,48 +37,11 @@
         android:layout_alignParentStart="true"
         android:layout_below="@+id/map"
         android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
-        android:hint="Distance"
+        android:hint="In Meters"
         android:inputType="numberSigned"
         map:layout_constraintEnd_toEndOf="parent"
-        map:layout_constraintHorizontal_bias="1.0"
-        map:layout_constraintStart_toStartOf="parent"
         map:layout_constraintTop_toBottomOf="@+id/edit_userName" />
-
-    <EditText
-        android:id="@+id/exerciseType"
-        android:layout_width="227dp"
-        android:layout_height="38dp"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/available"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
-        android:text="run"
-        map:layout_constraintEnd_toEndOf="parent"
-        map:layout_constraintHorizontal_bias="1.0"
-        map:layout_constraintRight_toRightOf="parent"
-        map:layout_constraintStart_toStartOf="parent"
-        map:layout_constraintTop_toBottomOf="@+id/edit_distancePref" />
-
-    <EditText
-        android:id="@+id/available"
-        android:layout_width="227dp"
-        android:layout_height="38dp"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/map"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
-        android:text="yes"
-        map:layout_constraintEnd_toEndOf="parent"
-        map:layout_constraintHorizontal_bias="1.0"
-        map:layout_constraintLeft_toLeftOf="parent"
-        map:layout_constraintRight_toRightOf="parent"
-        map:layout_constraintStart_toStartOf="parent"
-        map:layout_constraintTop_toBottomOf="@+id/exerciseType" />
 
     <Button
         android:id="@+id/lookButton"
@@ -156,5 +115,84 @@
         map:layout_constraintLeft_toLeftOf="parent"
         map:layout_constraintRight_toRightOf="parent"
         map:layout_constraintTop_toBottomOf="@+id/lookButton" />
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="119dp"
+        android:layout_height="38dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:gravity="left"
+        android:text="Name"
+        android:textStyle="bold"
+        android:textSize="18dp"
+        map:layout_constraintEnd_toStartOf="@+id/edit_userName"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toBottomOf="@+id/map" />
+
+    <TextView
+        android:id="@+id/prefDistance"
+        android:layout_width="119dp"
+        android:layout_height="38dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:gravity="left"
+        android:text="Distance"
+        android:textStyle="bold"
+        android:textSize="18dp"
+        map:layout_constraintEnd_toStartOf="@+id/edit_distancePref"
+        map:layout_constraintHorizontal_bias="0.571"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toBottomOf="@+id/name" />
+
+    <TextView
+        android:id="@+id/exTypeTV"
+        android:layout_width="119dp"
+        android:layout_height="38dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:gravity="left"
+        android:text="Exercise Type"
+        android:textSize="18dp"
+        android:textStyle="bold"
+        map:layout_constraintEnd_toStartOf="@+id/exerciseType"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toBottomOf="@+id/prefDistance" />
+
+    <TextView
+        android:id="@+id/availabilityTV"
+        android:layout_width="119dp"
+        android:layout_height="38dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:gravity="left"
+        android:text="Available"
+        android:textSize="18dp"
+        android:textStyle="bold"
+        map:layout_constraintEnd_toStartOf="@+id/available"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toBottomOf="@+id/exTypeTV" />
+
+    <Spinner
+        android:id="@+id/exerciseType"
+        android:layout_width="227dp"
+        android:layout_height="38dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="4dp"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintTop_toBottomOf="@+id/edit_distancePref" />
+
+    <Spinner
+        android:id="@+id/available"
+        android:layout_width="227dp"
+        android:layout_height="38dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="4dp"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintTop_toBottomOf="@+id/exerciseType" />
 
 </android.support.constraint.ConstraintLayout>

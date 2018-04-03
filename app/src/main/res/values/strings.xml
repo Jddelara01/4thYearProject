@@ -4,4 +4,14 @@
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="signin">SignIn</string>
+
+    <string-array name="availabilities">
+        <item>yes</item>
+        <item>no</item>
+    </string-array>
+
+    <string-array name="exerciseTypes">
+        <item>walk</item>
+        <item>run</item>
+    </string-array>
 </resources>
