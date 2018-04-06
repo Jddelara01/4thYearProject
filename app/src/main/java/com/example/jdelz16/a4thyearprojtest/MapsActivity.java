@@ -1,5 +1,6 @@
 package com.example.jdelz16.a4thyearprojtest;
 
+import java.text.DecimalFormat;
 import android.Manifest;
 import android.app.ListActivity;
 import android.content.Intent;
@@ -22,6 +23,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RatingBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -96,7 +98,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private double uLatt;
     private double uLongt;
     private String uExerciseType;
-    private Button lookForBuddy, cancelBuddy, acceptBuddy;
+    private Button lookForBuddy, cancelBuddy, acceptBuddy, rateBuddy;
+    private RatingBar rating;
 
     private List<Polyline> polylines;
 
@@ -110,6 +113,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String targetBud;
 
     private long routeTimer;
+
+    private double average;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,7 +136,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         lookForBuddy = (Button)findViewById(R.id.lookButton);
         cancelBuddy = (Button)findViewById(R.id.cancelButton);
         acceptBuddy = (Button)findViewById(R.id.acceptButton);
+        rateBuddy = (Button)findViewById(R.id.submitRating);
         mTextViewCountdown = (TextView)findViewById(R.id.timer);
+        rating = (RatingBar)findViewById(R.id.ratingBar);
 
         acceptBuddy.setVisibility(View.GONE);
         cancelBuddy.setVisibility(View.GONE);
@@ -177,6 +184,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //set the username
         loadUserInformation();
+        avgRating();
 
         //check if the network provider is enabled
         if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
@@ -217,6 +225,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         userInformation.setLatitude(lat);
                         userInformation.setLongtitude(lng);
                         userInformation.setUniqueID(mCurrent_user.getUid().toString());
+                        userInformation.setRatingAvg(average);
 
                         uLatt = lat;
                         uLongt = lng;
@@ -371,7 +380,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        //loadUserInformation();
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -429,6 +437,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             Toast.makeText(MapsActivity.this, "Stay and wait for your buddy!!", Toast.LENGTH_LONG).show();
                                             //mTextViewCountdown.setVisibility(View.VISIBLE);
                                             lv.setVisibility(textView.INVISIBLE);
+                                            lookForBuddy.setVisibility(View.INVISIBLE);
+                                            rateBuddy.setVisibility(View.VISIBLE);
+                                            rating.setVisibility(View.VISIBLE);
                                             startTimer();
                                         }
                                     });
@@ -455,9 +466,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     for(DataSnapshot ds : dataSnapshot.getChildren()){
                         String theUser = ds.child("uniqueIdentifier").getValue(String.class);
                         String reply = ds.child("receiverReply").getValue(String.class);
+                        Rating rateUser = new Rating();
 
                         if(theUser.equals(mCurrent_user.getUid().toString()) && reply.equals("yes")){
                             targetBud = ds.child("requestType").getValue(String.class);
+                            lv.setVisibility(textView.INVISIBLE);
+                            lookForBuddy.setVisibility(View.INVISIBLE);
+                            rateBuddy.setVisibility(View.VISIBLE);
+                            rating.setVisibility(View.VISIBLE);
+
                             Toast.makeText(MapsActivity.this, "Go to your buddy!!", Toast.LENGTH_SHORT).show();
                             showRoute(targetBud);
 
@@ -476,6 +493,52 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
+            }
+        });
+
+        rateBuddy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mBuddyReqDB.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.exists()){
+                            for(DataSnapshot ds : dataSnapshot.getChildren()){
+                                String theUser = ds.child("uniqueIdentifier").getValue(String.class);
+                                String reply = ds.child("receiverReply").getValue(String.class);
+                                Rating rateUser = new Rating();
+
+                                if(theUser.equals(mCurrent_user.getUid().toString()) && reply.equals("yes")){
+                                    targetBud = ds.child("requestType").getValue(String.class);
+
+                                    rateUser.setRating(rating.getRating());
+                                    rateUser.setUniqID(targetBud);
+                                    databaseReference.child("ratings").child(targetBud).push().setValue(rateUser);
+
+                                    avgRating();
+                                    lookForBuddy.setVisibility(View.VISIBLE);
+                                    rateBuddy.setVisibility(View.INVISIBLE);
+                                    rating.setVisibility(View.INVISIBLE);
+                                    acceptBuddy.setVisibility(View.INVISIBLE);
+
+                                } else {
+                                    rateUser();
+                                    avgRating();
+                                    lookForBuddy.setVisibility(View.VISIBLE);
+                                    rateBuddy.setVisibility(View.INVISIBLE);
+                                    rating.setVisibility(View.INVISIBLE);
+                                    mTextViewCountdown.setVisibility(View.INVISIBLE);
+                                    acceptBuddy.setVisibility(View.INVISIBLE);
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
             }
         });
 
@@ -567,6 +630,77 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
    }
 
+   public void rateUser() {
+       refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
+       refDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+           @Override
+           public void onDataChange(DataSnapshot dataSnapshot) {
+               if(dataSnapshot.exists()){
+
+                   Log.d("CheckforID", mCurrent_user.getUid().toString());
+
+                   for (DataSnapshot ds : dataSnapshot.getChildren()){
+                       Buddy_req budReq = ds.getValue(Buddy_req.class);
+                       Rating rateUser = new Rating();
+                       String uniqueID;
+
+                       if(budReq.getRequestType().equals(mCurrent_user.getUid().toString())){
+                           rateUser.setRating(rating.getRating());
+                           rateUser.setUniqID(budReq.getUniqueIdentifier().toString());
+                           uniqueID = budReq.getUniqueIdentifier().toString();
+                           databaseReference.child("ratings").child(uniqueID).push().setValue(rateUser);
+                       }
+                       else {
+                           Log.d("Check rating", "Checked");
+                       }
+                   }
+               } else {
+                   acceptBuddy.setVisibility(View.GONE);
+               }
+           }
+
+           @Override
+           public void onCancelled(DatabaseError databaseError) {
+
+           }
+       });
+   }
+
+   public void avgRating() {
+       databaseReference.child("ratings").child(mCurrent_user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+           @Override
+           public void onDataChange(DataSnapshot dataSnapshot) {
+               double total = 0;
+               double count = 0;
+
+               if(dataSnapshot.exists()) {
+                   for (DataSnapshot ds : dataSnapshot.getChildren()){
+                      double rating = Double.parseDouble(ds.child("rating").getValue().toString());
+                      total = total + rating;
+                      count = count + 1;
+                      average = total / count;
+                      average = Math.round(average * 100);
+                      average = average/100;
+
+                       ds.child("averageRating").getRef().setValue(average);
+                   }
+
+                   final DatabaseReference newRef = FirebaseDatabase.getInstance().getReference().child("users");;
+                   newRef.child(mCurrent_user.getUid()).child("ratingAvg").setValue(average);
+
+                   Log.d("TheAvgRating", String.valueOf(average));
+               } else {
+                   Log.d("AverageRating", "Empty");
+               }
+           }
+
+           @Override
+           public void onCancelled(DatabaseError databaseError) {
+
+           }
+       });
+   }
+
    public void startTimer() {
        refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
        refDatabase.addValueEventListener(new ValueEventListener() {
@@ -645,6 +779,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                            double mylat = userInfo.getLatitude();
                            double mylong = userInfo.getLongtitude();
                            String exTitle = ds.child("userName").getValue(String.class);
+                           Double userRating = ds.child("ratingAvg").getValue(Double.class);
 
                            String forUNameList = ds.child("userName").getValue(String.class);
 
@@ -667,7 +802,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                            MarkerOptions markerOptions = new MarkerOptions();
                            markerOptions.position(newLocation);
-                           markerOptions.title(exTitle);
+                           markerOptions.title(exTitle + ", " + userRating);
                            markerOptions.visible(false);
 
                            Marker locationMarker = mMap.addMarker(markerOptions);

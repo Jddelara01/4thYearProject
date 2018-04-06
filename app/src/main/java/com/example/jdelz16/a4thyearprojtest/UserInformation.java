@@ -12,6 +12,7 @@ public class UserInformation {
     public double latitude;
     public double longtitude;
     public String uniqueID;
+    public double ratingAvg;
 
    /*public UserInformation() {
 
@@ -68,5 +69,13 @@ public class UserInformation {
 
     public void setUniqueID(String uniqueID) {
         this.uniqueID = uniqueID;
+    }
+
+    public double getRatingAvg() {
+        return ratingAvg;
+    }
+
+    public void setRatingAvg(double ratingAvg) {
+        this.ratingAvg = ratingAvg;
     }
 }
