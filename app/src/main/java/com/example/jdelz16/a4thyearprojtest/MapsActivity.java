@@ -98,7 +98,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private double uLatt;
     private double uLongt;
     private String uExerciseType;
-    private Button lookForBuddy, cancelBuddy, acceptBuddy, rateBuddy;
+    private String uAvailability;
+    private Button lookForBuddy, cancelBuddy, acceptBuddy, denyBuddy, rateBuddy;
     private RatingBar rating;
 
     private List<Polyline> polylines;
@@ -136,6 +137,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         lookForBuddy = (Button)findViewById(R.id.lookButton);
         cancelBuddy = (Button)findViewById(R.id.cancelButton);
         acceptBuddy = (Button)findViewById(R.id.acceptButton);
+        denyBuddy = (Button)findViewById(R.id.denyButton);
         rateBuddy = (Button)findViewById(R.id.submitRating);
         mTextViewCountdown = (TextView)findViewById(R.id.timer);
         rating = (RatingBar)findViewById(R.id.ratingBar);
@@ -212,15 +214,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                     else {
                         String uName = editUserName.getText().toString().trim();
-                        String availability = editAvailability.getSelectedItem().toString();
+                        //String availability = editAvailability.getSelectedItem().toString();
                         String exerciseType = editExerciseType.getSelectedItem().toString();
-
-
 
                         UserInformation userInformation = new UserInformation();
 
                         userInformation.setUserName(uName);
-                        userInformation.setAvailability(availability);
+                        userInformation.setAvailability(uAvailability);
                         userInformation.setExerciseType(exerciseType);
                         userInformation.setLatitude(lat);
                         userInformation.setLongtitude(lng);
@@ -234,7 +234,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         Geocoder geocoder = new Geocoder(getApplicationContext());
                         try {
                             List<Address> addressList = geocoder.getFromLocation(lat, lng, 1);
-                            String str = addressList.get(0).getLocality() + ", ";
+                            //String str = addressList.get(0).getLocality() + ", ";
                             //str += addressList.get(0).getCountryName();
                             //mMap.addMarker(new MarkerOptions().position(latLng).title(str + " " + myDB.listsGPS()));
                             //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10.2f));
@@ -375,6 +375,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if(editUserName.getText().toString().matches("") ){
                     Toast.makeText(MapsActivity.this, "Please enter a Name", Toast.LENGTH_SHORT).show();
                 } else {
+                    String availability = editAvailability.getSelectedItem().toString();
+                    String exerciseType = editExerciseType.getSelectedItem().toString();
+
+                    databaseReference.child("users").child(mCurrent_user.getUid()).child("availability").setValue(availability);
+
                     searchForBuddy();
                 }
             }
@@ -459,6 +464,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+        denyBuddy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                denyBuddyRequest();
+            }
+        });
+
         mBuddyReqDB.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -485,6 +497,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     Toast.makeText(MapsActivity.this, "Timer changed", Toast.LENGTH_LONG).show();
                                 }
                             });
+                        } else if(theUser.equals(mCurrent_user.getUid().toString()) && reply.equals("deny")) {
+                            Toast.makeText(MapsActivity.this, "Your buddy denied you.", Toast.LENGTH_SHORT).show();
+                            cancelBuddy.setVisibility(View.VISIBLE);
                         }
                     }
                 }
@@ -499,44 +514,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         rateBuddy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mBuddyReqDB.addListenerForSingleValueEvent(new ValueEventListener() {
+                rateBuddy2();
+                denyBuddy.setVisibility(View.INVISIBLE);
+                databaseReference.child("buddyReq").child(mCurrent_user.getUid()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if(dataSnapshot.exists()){
-                            for(DataSnapshot ds : dataSnapshot.getChildren()){
-                                String theUser = ds.child("uniqueIdentifier").getValue(String.class);
-                                String reply = ds.child("receiverReply").getValue(String.class);
-                                Rating rateUser = new Rating();
-
-                                if(theUser.equals(mCurrent_user.getUid().toString()) && reply.equals("yes")){
-                                    targetBud = ds.child("requestType").getValue(String.class);
-
-                                    rateUser.setRating(rating.getRating());
-                                    rateUser.setUniqID(targetBud);
-                                    databaseReference.child("ratings").child(targetBud).push().setValue(rateUser);
-
-                                    avgRating();
-                                    lookForBuddy.setVisibility(View.VISIBLE);
-                                    rateBuddy.setVisibility(View.INVISIBLE);
-                                    rating.setVisibility(View.INVISIBLE);
-                                    acceptBuddy.setVisibility(View.INVISIBLE);
-
-                                } else {
-                                    rateUser();
-                                    avgRating();
-                                    lookForBuddy.setVisibility(View.VISIBLE);
-                                    rateBuddy.setVisibility(View.INVISIBLE);
-                                    rating.setVisibility(View.INVISIBLE);
-                                    mTextViewCountdown.setVisibility(View.INVISIBLE);
-                                    acceptBuddy.setVisibility(View.INVISIBLE);
-                                }
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
+                    public void onSuccess(Void aVoid) {
+                        cancelBuddy.setVisibility(View.GONE);
                     }
                 });
             }
@@ -582,6 +565,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             UserInformation userInformation = dataSnapshot.getValue(UserInformation.class);
 
                             editUserName.setText(userInformation.getUserName());
+                            uAvailability = userInformation.getAvailability();
                         }
                     }
 
@@ -611,8 +595,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 @Override
                                 public void run() {
                                     acceptBuddy.setVisibility(View.VISIBLE);
+                                    denyBuddy.setVisibility(View.VISIBLE);
                                 }
                             }, 3000);
+                        }
+                        else if(budReq.getRequestType().equals("deny")) {
+                            acceptBuddy.setVisibility(View.INVISIBLE);
+                            denyBuddy.setVisibility(View.INVISIBLE);
                         }
                         else {
                             Toast.makeText(MapsActivity.this, "You sent a buddy request", Toast.LENGTH_SHORT).show();
@@ -630,7 +619,50 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
    }
 
-   public void rateUser() {
+   public void denyBuddyRequest(){
+       refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
+       refDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+           @Override
+           public void onDataChange(DataSnapshot dataSnapshot) {
+               if(dataSnapshot.exists()){
+                   Log.d("CheckforID", mCurrent_user.getUid().toString());
+                   theTarget = dataSnapshot.child("uniqueIdentifier").getValue(String.class);
+
+                   for(final DataSnapshot ds : dataSnapshot.getChildren()){
+                       String theUser = ds.child("requestType").getValue(String.class);
+
+                       if(theUser.equals(mCurrent_user.getUid().toString())){
+                           ds.child("requestType").getRef().setValue("empty").addOnSuccessListener(new OnSuccessListener<Void>() {
+                               @Override
+                               public void onSuccess(Void aVoid) {
+                                   Toast.makeText(MapsActivity.this, "You denied a buddy.", Toast.LENGTH_LONG).show();
+                                   ds.child("receiverReply").getRef().setValue("deny").addOnSuccessListener(new OnSuccessListener<Void>() {
+                                       @Override
+                                       public void onSuccess(Void aVoid) {
+                                           mMap.clear();
+                                           denyBuddy.setVisibility(View.INVISIBLE);
+                                           acceptBuddy.setVisibility(View.INVISIBLE);
+                                       }
+                                   });
+                               }
+                           });
+                       }
+                   }
+               } else {
+                   denyBuddy.setVisibility(View.INVISIBLE);
+                   acceptBuddy.setVisibility(View.INVISIBLE);
+                   mTextViewCountdown.setVisibility(View.GONE);
+               }
+           }
+
+           @Override
+           public void onCancelled(DatabaseError databaseError) {
+
+           }
+       });
+   }
+
+   public void rateBuddy1() {
        refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
        refDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
            @Override
@@ -656,6 +688,49 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                    }
                } else {
                    acceptBuddy.setVisibility(View.GONE);
+               }
+           }
+
+           @Override
+           public void onCancelled(DatabaseError databaseError) {
+
+           }
+       });
+   }
+
+   public void rateBuddy2() {
+       mBuddyReqDB.addListenerForSingleValueEvent(new ValueEventListener() {
+           @Override
+           public void onDataChange(DataSnapshot dataSnapshot) {
+               if(dataSnapshot.exists()){
+                   for(DataSnapshot ds : dataSnapshot.getChildren()){
+                       String theUser = ds.child("uniqueIdentifier").getValue(String.class);
+                       String reply = ds.child("receiverReply").getValue(String.class);
+                       Rating rateUser = new Rating();
+
+                       if(theUser.equals(mCurrent_user.getUid().toString()) && reply.equals("yes")){
+                           targetBud = ds.child("requestType").getValue(String.class);
+
+                           rateUser.setRating(rating.getRating());
+                           rateUser.setUniqID(targetBud);
+                           databaseReference.child("ratings").child(targetBud).push().setValue(rateUser);
+
+                           avgRating();
+                           lookForBuddy.setVisibility(View.VISIBLE);
+                           rateBuddy.setVisibility(View.INVISIBLE);
+                           rating.setVisibility(View.INVISIBLE);
+                           acceptBuddy.setVisibility(View.INVISIBLE);
+
+                       } else {
+                           rateBuddy1();
+                           avgRating();
+                           lookForBuddy.setVisibility(View.VISIBLE);
+                           rateBuddy.setVisibility(View.INVISIBLE);
+                           rating.setVisibility(View.INVISIBLE);
+                           mTextViewCountdown.setVisibility(View.INVISIBLE);
+                           acceptBuddy.setVisibility(View.INVISIBLE);
+                       }
+                   }
                }
            }
 
@@ -760,6 +835,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
    public void searchForBuddy(){
        String prefDistance = editDistancePref.getText().toString().trim();
+       final String exerciseType = editExerciseType.getSelectedItem().toString();
 
        mTextViewCountdown.setVisibility(textView.INVISIBLE);
 
@@ -775,7 +851,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
                        UserInformation userInfo = ds.getValue(UserInformation.class);
 
-                       if (userInfo.getExerciseType().equals(uExerciseType)) {
+                       if (userInfo.getExerciseType().equals(exerciseType)) {
                            double mylat = userInfo.getLatitude();
                            double mylong = userInfo.getLongtitude();
                            String exTitle = ds.child("userName").getValue(String.class);
