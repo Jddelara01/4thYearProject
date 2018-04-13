@@ -9,6 +9,7 @@ public class Buddy_req {
     public String uniqueIdentifier;
     public String receiverReply;
     public double timer;
+    public String inviter;
 
     public String getRequestType() {
         return requestType;
@@ -40,5 +41,13 @@ public class Buddy_req {
 
     public void setTimer(double timer) {
         this.timer = timer;
+    }
+
+    public String getInviter() {
+        return inviter;
+    }
+
+    public void setInviter(String inviter) {
+        this.inviter = inviter;
     }
 }

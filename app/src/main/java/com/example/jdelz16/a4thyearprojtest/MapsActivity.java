@@ -79,7 +79,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private DatabaseReference databaseReference;
     private EditText editUserName, editDistancePref;
     private Spinner editAvailability, editExerciseType;
-    private TextView mTextViewCountdown;
+    private TextView mTextViewCountdown, inviterMsge;
     private CountDownTimer mCountDownTimer;
     private long mTimeLeftInMillis;
 
@@ -98,7 +98,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private double uLatt;
     private double uLongt;
     private String uExerciseType;
-    private String uAvailability;
+    private String uAvailability, uName, senderID;
     private Button lookForBuddy, cancelBuddy, acceptBuddy, denyBuddy, rateBuddy;
     private RatingBar rating;
 
@@ -141,6 +141,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         rateBuddy = (Button)findViewById(R.id.submitRating);
         mTextViewCountdown = (TextView)findViewById(R.id.timer);
         rating = (RatingBar)findViewById(R.id.ratingBar);
+        inviterMsge = (TextView)findViewById(R.id.inviteMssge);
 
         acceptBuddy.setVisibility(View.GONE);
         cancelBuddy.setVisibility(View.GONE);
@@ -148,8 +149,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mBuddyReqDB = FirebaseDatabase.getInstance().getReference().child("buddyReq");
 
         mCurrent_user = FirebaseAuth.getInstance().getCurrentUser();
-
-        myDB = new DatabaseHelper(this, "", null, 9);
 
         polylines = new ArrayList<>();
 
@@ -201,7 +200,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     LatLng latLng = new LatLng(lat, lng);
 
                     //insert the location to the database
-                    myDB.insert_location(String.valueOf(lat), String.valueOf(lng));
+                    //myDB.insert_location(String.valueOf(lat), String.valueOf(lng));
                     Log.d("1st:", String.valueOf(lat));
                     //show lat and long
                     //textView.setText(myDB.list_locations());
@@ -441,8 +440,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         public void onSuccess(Void aVoid) {
                                             Toast.makeText(MapsActivity.this, "Stay and wait for your buddy!!", Toast.LENGTH_LONG).show();
                                             //mTextViewCountdown.setVisibility(View.VISIBLE);
-                                            lv.setVisibility(textView.INVISIBLE);
-                                            lookForBuddy.setVisibility(View.INVISIBLE);
+                                            inviterMsge.setVisibility(View.INVISIBLE);
                                             rateBuddy.setVisibility(View.VISIBLE);
                                             rating.setVisibility(View.VISIBLE);
                                             startTimer();
@@ -467,6 +465,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         denyBuddy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                inviterMsge.setVisibility(View.INVISIBLE);
                 denyBuddyRequest();
             }
         });
@@ -516,6 +515,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
                 rateBuddy2();
                 denyBuddy.setVisibility(View.INVISIBLE);
+                rateBuddy.setVisibility(View.INVISIBLE);
                 databaseReference.child("buddyReq").child(mCurrent_user.getUid()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -566,6 +566,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                             editUserName.setText(userInformation.getUserName());
                             uAvailability = userInformation.getAvailability();
+                            uName = userInformation.getUserName();
                         }
                     }
 
@@ -586,22 +587,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if(dataSnapshot.exists()){
 
                     Log.d("CheckforID", mCurrent_user.getUid().toString());
-
                     for (DataSnapshot ds : dataSnapshot.getChildren()){
-                        Buddy_req budReq = ds.getValue(Buddy_req.class);
+                        final Buddy_req budReq = ds.getValue(Buddy_req.class);
 
                         if(budReq.getRequestType().equals(mCurrent_user.getUid().toString())){
+                            final String senderName = budReq.getInviter();
+                            senderID = budReq.getUniqueIdentifier();
+                            lv.setVisibility(View.INVISIBLE);
+                            lookForBuddy.setVisibility(View.INVISIBLE);
                             acceptBuddy.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
+                                    inviterMsge.setText(senderName + " wants to be your buddy.");
                                     acceptBuddy.setVisibility(View.VISIBLE);
                                     denyBuddy.setVisibility(View.VISIBLE);
+                                    inviterMsge.setVisibility(View.VISIBLE);
                                 }
                             }, 3000);
                         }
                         else if(budReq.getRequestType().equals("deny")) {
                             acceptBuddy.setVisibility(View.INVISIBLE);
                             denyBuddy.setVisibility(View.INVISIBLE);
+                            inviterMsge.setVisibility(View.INVISIBLE);
                         }
                         else {
                             Toast.makeText(MapsActivity.this, "You sent a buddy request", Toast.LENGTH_SHORT).show();
@@ -609,6 +616,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 } else {
                     acceptBuddy.setVisibility(View.GONE);
+                    inviterMsge.setVisibility(View.GONE);
                 }
             }
 
@@ -679,11 +687,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                        if(budReq.getRequestType().equals(mCurrent_user.getUid().toString())){
                            rateUser.setRating(rating.getRating());
                            rateUser.setUniqID(budReq.getUniqueIdentifier().toString());
-                           uniqueID = budReq.getUniqueIdentifier().toString();
-                           databaseReference.child("ratings").child(uniqueID).push().setValue(rateUser);
+                           //uniqueID = budReq.getUniqueIdentifier().toString();
+                           databaseReference.child("ratings").child(targetBud).push().setValue(rateUser);
                        }
                        else {
                            Log.d("Check rating", "Checked");
+                           databaseReference.child("ratings").child(senderID).push().setValue(rateUser);
                        }
                    }
                } else {
@@ -732,6 +741,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                        }
                    }
                }
+               //add ratebuddy1 here..
            }
 
            @Override
@@ -815,6 +825,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                    }
                } else {
                    acceptBuddy.setVisibility(View.GONE);
+
                }
            }
 
@@ -931,6 +942,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             showRoute(result1);
                             Log.d("TIMER: ", String.valueOf(routeTimer));
 
+                            buddy_req.setInviter(uName);
                             buddy_req.setRequestType(result1);
                             buddy_req.setUniqueIdentifier(mCurrent_user.getUid().toString());
                             buddy_req.setReceiverReply("no");
@@ -1028,7 +1040,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             routeTimer = route.get(i).getDurationValue();
 
             refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
-            refDatabase.addValueEventListener(new ValueEventListener() {
+            refDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
