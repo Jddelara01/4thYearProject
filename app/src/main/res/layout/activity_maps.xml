@@ -178,6 +178,7 @@
         android:text="Distance"
         android:textStyle="bold"
         android:textSize="18dp"
+        android:inputType="number"
         map:layout_constraintEnd_toStartOf="@+id/edit_distancePref"
         map:layout_constraintHorizontal_bias="0.571"
         map:layout_constraintStart_toStartOf="parent"
@@ -244,7 +245,7 @@
     <TextView
         android:id="@+id/inviteMssge"
         android:layout_width="228dp"
-        android:layout_height="43dp"
+        android:layout_height="87dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="45dp"

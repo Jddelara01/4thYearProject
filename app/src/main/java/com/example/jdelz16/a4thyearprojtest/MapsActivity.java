@@ -1,6 +1,7 @@
 package com.example.jdelz16.a4thyearprojtest;
 
 import java.text.DecimalFormat;
+
 import android.Manifest;
 import android.app.ListActivity;
 import android.content.Intent;
@@ -92,7 +93,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String buddy_state;
 
     private ArrayList<String> listOfUsers = new ArrayList<>();
-   // private Set<String> hs = new HashSet<>();
+    // private Set<String> hs = new HashSet<>();
 
 
     private double uLatt;
@@ -122,7 +123,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        if(user_id != null){
+        if (user_id != null) {
             Log.d("FIRSTUSERID", user_id);
         }
 
@@ -134,14 +135,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         editDistancePref = (EditText) findViewById(R.id.edit_distancePref);
         editAvailability = (Spinner) findViewById(R.id.available);
         editExerciseType = (Spinner) findViewById(R.id.exerciseType);
-        lookForBuddy = (Button)findViewById(R.id.lookButton);
-        cancelBuddy = (Button)findViewById(R.id.cancelButton);
-        acceptBuddy = (Button)findViewById(R.id.acceptButton);
-        denyBuddy = (Button)findViewById(R.id.denyButton);
-        rateBuddy = (Button)findViewById(R.id.submitRating);
-        mTextViewCountdown = (TextView)findViewById(R.id.timer);
-        rating = (RatingBar)findViewById(R.id.ratingBar);
-        inviterMsge = (TextView)findViewById(R.id.inviteMssge);
+        lookForBuddy = (Button) findViewById(R.id.lookButton);
+        cancelBuddy = (Button) findViewById(R.id.cancelButton);
+        acceptBuddy = (Button) findViewById(R.id.acceptButton);
+        denyBuddy = (Button) findViewById(R.id.denyButton);
+        rateBuddy = (Button) findViewById(R.id.submitRating);
+        mTextViewCountdown = (TextView) findViewById(R.id.timer);
+        rating = (RatingBar) findViewById(R.id.ratingBar);
+        inviterMsge = (TextView) findViewById(R.id.inviteMssge);
 
         acceptBuddy.setVisibility(View.GONE);
         cancelBuddy.setVisibility(View.GONE);
@@ -208,10 +209,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Log.d("2nd:", "Working");
                     //instantiate the class Geocoder
 
-                    if(editUserName.getText().toString().matches("")){
+                    if (editUserName.getText().toString().matches("")) {
                         Toast.makeText(MapsActivity.this, "Please enter a Name", Toast.LENGTH_SHORT).show();
-                    }
-                    else {
+                    } else {
                         String uName = editUserName.getText().toString().trim();
                         //String availability = editAvailability.getSelectedItem().toString();
                         String exerciseType = editExerciseType.getSelectedItem().toString();
@@ -269,7 +269,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             ref.child("users").child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    if(dataSnapshot.getValue() == null) {
+                    if (dataSnapshot.getValue() == null) {
                         Log.d("Error Message", "Empty");
                     } else {
                         UserInformation loc = dataSnapshot.getValue(UserInformation.class);
@@ -284,6 +284,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
 
                 }
+
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
 
@@ -366,17 +367,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             });*/
         }
 
-        acceptBuddyRequest();
-
         lookForBuddy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(editUserName.getText().toString().matches("") ){
-                    Toast.makeText(MapsActivity.this, "Please enter a Name", Toast.LENGTH_SHORT).show();
+                if (editUserName.getText().toString().matches("")) {
+                    Toast.makeText(MapsActivity.this, "Please enter a name", Toast.LENGTH_SHORT).show();
+                } else if (editDistancePref.getText().toString().matches("")) {
+                    Toast.makeText(MapsActivity.this, "Please enter preferred distance.", Toast.LENGTH_SHORT).show();
                 } else {
                     String availability = editAvailability.getSelectedItem().toString();
-                    String exerciseType = editExerciseType.getSelectedItem().toString();
-
                     databaseReference.child("users").child(mCurrent_user.getUid()).child("availability").setValue(availability);
 
                     searchForBuddy();
@@ -392,31 +391,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 getUniqueID(lvItem);
 
+                lookForBuddy.setVisibility(View.INVISIBLE);
                 lv.setVisibility(View.INVISIBLE);
                 mTextViewCountdown.setVisibility(View.INVISIBLE);
-
-                /*if(buddy_state.equals("not buddies")) {
-                    mBuddyReqDB.child(mCurrent_user.getUid()).child(user_id).child("req_type")
-                            .setValue("sent").addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                mBuddyReqDB.child(user_id).child(mCurrent_user.getUid()).child("req_type")
-                                        .setValue("received").addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        //buddy_state = "req_sent";
-                                        cancelBuddy.setVisibility(View.VISIBLE);
-
-                                        Toast.makeText(MapsActivity.this, "Success sending request", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            } else {
-                                Toast.makeText(MapsActivity.this, "Failed sending request", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
-                }*/
             }
         });
 
@@ -427,20 +404,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 refDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        if(dataSnapshot.exists()){
+                        if (dataSnapshot.exists()) {
                             Log.d("CheckforID", mCurrent_user.getUid().toString());
                             theTarget = dataSnapshot.child("uniqueIdentifier").getValue(String.class);
 
-                            for(final DataSnapshot ds : dataSnapshot.getChildren()){
+                            for (final DataSnapshot ds : dataSnapshot.getChildren()) {
                                 String theUser = ds.child("requestType").getValue(String.class);
 
-                                if(theUser.equals(mCurrent_user.getUid().toString())){
+                                if (theUser.equals(mCurrent_user.getUid().toString())) {
                                     ds.child("receiverReply").getRef().setValue("yes").addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
                                             Toast.makeText(MapsActivity.this, "Stay and wait for your buddy!!", Toast.LENGTH_LONG).show();
                                             //mTextViewCountdown.setVisibility(View.VISIBLE);
                                             inviterMsge.setVisibility(View.INVISIBLE);
+                                            denyBuddy.setVisibility(View.INVISIBLE);
+                                            cancelBuddy.setVisibility(View.VISIBLE);
                                             rateBuddy.setVisibility(View.VISIBLE);
                                             rating.setVisibility(View.VISIBLE);
                                             startTimer();
@@ -470,35 +449,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+        acceptBuddyRequest();
+
         mBuddyReqDB.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    for(DataSnapshot ds : dataSnapshot.getChildren()){
-                        String theUser = ds.child("uniqueIdentifier").getValue(String.class);
-                        String reply = ds.child("receiverReply").getValue(String.class);
-                        Rating rateUser = new Rating();
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        Buddy_req budReq = ds.getValue(Buddy_req.class);
 
-                        if(theUser.equals(mCurrent_user.getUid().toString()) && reply.equals("yes")){
+                        //String theUser = budReq.getUniqueIdentifier();
+                        //String reply = ds.child("receiverReply").getValue(String.class);
+                        Log.d("mBuddyReqDB:", budReq.getUniqueIdentifier().toString());
+
+                        if (budReq.getUniqueIdentifier().equals(mCurrent_user.getUid().toString()) && budReq.getReceiverReply().equals("yes")) {
                             targetBud = ds.child("requestType").getValue(String.class);
                             lv.setVisibility(textView.INVISIBLE);
                             lookForBuddy.setVisibility(View.INVISIBLE);
                             rateBuddy.setVisibility(View.VISIBLE);
                             rating.setVisibility(View.VISIBLE);
+                            cancelBuddy.setVisibility(View.VISIBLE);
 
                             Toast.makeText(MapsActivity.this, "Go to your buddy!!", Toast.LENGTH_SHORT).show();
-                            showRoute(targetBud);
+                            //showRoute(targetBud);
 
-                            Log.d("TIMER: " , String.valueOf(routeTimer));
+                            Log.d("TIMER: ", String.valueOf(routeTimer));
                             ds.child("timer").getRef().setValue(routeTimer).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
                                     Toast.makeText(MapsActivity.this, "Timer changed", Toast.LENGTH_LONG).show();
                                 }
                             });
-                        } else if(theUser.equals(mCurrent_user.getUid().toString()) && reply.equals("deny")) {
+                        } else if (budReq.getUniqueIdentifier().equals(mCurrent_user.getUid().toString()) && budReq.getReceiverReply().equals("deny")) {
                             Toast.makeText(MapsActivity.this, "Your buddy denied you.", Toast.LENGTH_SHORT).show();
                             cancelBuddy.setVisibility(View.VISIBLE);
+                        } else if (budReq.getUniqueIdentifier().equals(mCurrent_user.getUid().toString()) && budReq.getReceiverReply().equals("cancelled")) {
+                            Toast.makeText(MapsActivity.this, "Buddy cancelled.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -514,6 +500,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onClick(View v) {
                 rateBuddy2();
+
+                mMap.clear();
+                polylines.clear();
                 denyBuddy.setVisibility(View.INVISIBLE);
                 rateBuddy.setVisibility(View.INVISIBLE);
                 databaseReference.child("buddyReq").child(mCurrent_user.getUid()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -529,16 +518,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onClick(View v) {
 
-                mTextViewCountdown.setVisibility(View.INVISIBLE);
-                databaseReference.child("buddyReq").child(mCurrent_user.getUid()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        cancelBuddy.setVisibility(View.GONE);
-                    }
-                });
+                cancelRequest();
 
                 mMap.clear();
                 polylines.clear();
+                mTextViewCountdown.setVisibility(View.INVISIBLE);
+                cancelBuddy.setVisibility(View.INVISIBLE);
+                mTextViewCountdown.setVisibility(View.INVISIBLE);
+                rateBuddy.setVisibility(View.INVISIBLE);
+                rating.setVisibility(View.INVISIBLE);
+                acceptBuddy.setVisibility(View.GONE);
+                lookForBuddy.setVisibility(View.VISIBLE);
             }
         });
 
@@ -549,17 +539,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-   }
+    }
 
     public void loadUserInformation() {
         //FirebaseUser firebaseUser = mAuth.getCurrentUser();
-        if(mCurrent_user != null){
-            if(mCurrent_user.getUid() != null) {
+        if (mCurrent_user != null) {
+            if (mCurrent_user.getUid() != null) {
                 //displayUserInfo.setText(firebaseUser.getUid());
                 databaseReference.child("users").child(mCurrent_user.getUid()).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.getValue() == null){
+                        if (dataSnapshot.getValue() == null) {
                             Toast.makeText(MapsActivity.this, "You need to input your Name", Toast.LENGTH_SHORT).show();
                         } else {
                             UserInformation userInformation = dataSnapshot.getValue(UserInformation.class);
@@ -579,18 +569,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-   public void acceptBuddyRequest() {
+    public void acceptBuddyRequest() {
         refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
         refDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
+                if (dataSnapshot.exists()) {
 
                     Log.d("CheckforID", mCurrent_user.getUid().toString());
-                    for (DataSnapshot ds : dataSnapshot.getChildren()){
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
                         final Buddy_req budReq = ds.getValue(Buddy_req.class);
 
-                        if(budReq.getRequestType().equals(mCurrent_user.getUid().toString())){
+                        if (budReq.getRequestType().equals(mCurrent_user.getUid().toString()) && budReq.getReceiverReply().equals("no")) {
                             final String senderName = budReq.getInviter();
                             senderID = budReq.getUniqueIdentifier();
                             lv.setVisibility(View.INVISIBLE);
@@ -604,15 +594,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     inviterMsge.setVisibility(View.VISIBLE);
                                 }
                             }, 3000);
-                        }
-                        else if(budReq.getRequestType().equals("deny")) {
+                        } else if (budReq.getRequestType().equals(mCurrent_user.getUid().toString()) && budReq.getReceiverReply().equals("cancelled")) {
+                            Toast.makeText(MapsActivity.this, "Buddy cancelled.!", Toast.LENGTH_SHORT).show();
                             acceptBuddy.setVisibility(View.INVISIBLE);
                             denyBuddy.setVisibility(View.INVISIBLE);
                             inviterMsge.setVisibility(View.INVISIBLE);
                         }
-                        else {
-                            Toast.makeText(MapsActivity.this, "You sent a buddy request", Toast.LENGTH_SHORT).show();
-                        }
+
+                        Log.d("CANCELLED:", budReq.getRequestType());
                     }
                 } else {
                     acceptBuddy.setVisibility(View.GONE);
@@ -625,304 +614,358 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
-   }
+    }
 
-   public void denyBuddyRequest(){
-       refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
-       refDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
-           @Override
-           public void onDataChange(DataSnapshot dataSnapshot) {
-               if(dataSnapshot.exists()){
-                   Log.d("CheckforID", mCurrent_user.getUid().toString());
-                   theTarget = dataSnapshot.child("uniqueIdentifier").getValue(String.class);
+    public void cancelRequest() {
+        refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
+        refDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
 
-                   for(final DataSnapshot ds : dataSnapshot.getChildren()){
-                       String theUser = ds.child("requestType").getValue(String.class);
+                    for (final DataSnapshot ds : dataSnapshot.getChildren()) {
+                        final Buddy_req budReq = ds.getValue(Buddy_req.class);
 
-                       if(theUser.equals(mCurrent_user.getUid().toString())){
-                           ds.child("requestType").getRef().setValue("empty").addOnSuccessListener(new OnSuccessListener<Void>() {
-                               @Override
-                               public void onSuccess(Void aVoid) {
-                                   Toast.makeText(MapsActivity.this, "You denied a buddy.", Toast.LENGTH_LONG).show();
-                                   ds.child("receiverReply").getRef().setValue("deny").addOnSuccessListener(new OnSuccessListener<Void>() {
-                                       @Override
-                                       public void onSuccess(Void aVoid) {
-                                           mMap.clear();
-                                           denyBuddy.setVisibility(View.INVISIBLE);
-                                           acceptBuddy.setVisibility(View.INVISIBLE);
-                                       }
-                                   });
-                               }
-                           });
-                       }
-                   }
-               } else {
-                   denyBuddy.setVisibility(View.INVISIBLE);
-                   acceptBuddy.setVisibility(View.INVISIBLE);
-                   mTextViewCountdown.setVisibility(View.GONE);
-               }
-           }
+                        if (budReq.getRequestType().equals(mCurrent_user.getUid().toString())) {
+                            ds.child("receiverReply").getRef().setValue("cancelled").addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    ds.child("requestType").getRef().setValue("").addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            cancelBuddy.setVisibility(View.GONE);
+                                            Toast.makeText(MapsActivity.this, "Cancelled!!!", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }
+                            });
 
-           @Override
-           public void onCancelled(DatabaseError databaseError) {
+                        } else if (budReq.getUniqueIdentifier().equals(mCurrent_user.getUid().toString())) {
+                            ds.child("receiverReply").getRef().setValue("cancelled").addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Toast.makeText(MapsActivity.this, "Cancelled!!!", Toast.LENGTH_SHORT).show();
+                                    databaseReference.child("buddyReq").child(mCurrent_user.getUid()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            cancelBuddy.setVisibility(View.GONE);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                }
 
-           }
-       });
-   }
+            }
 
-   public void rateBuddy1() {
-       refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
-       refDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
-           @Override
-           public void onDataChange(DataSnapshot dataSnapshot) {
-               if(dataSnapshot.exists()){
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-                   Log.d("CheckforID", mCurrent_user.getUid().toString());
+            }
+        });
+    }
 
-                   for (DataSnapshot ds : dataSnapshot.getChildren()){
-                       Buddy_req budReq = ds.getValue(Buddy_req.class);
-                       Rating rateUser = new Rating();
-                       String uniqueID;
+    public void denyBuddyRequest() {
+        refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
+        refDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    Log.d("CheckforID", mCurrent_user.getUid().toString());
+                    theTarget = dataSnapshot.child("uniqueIdentifier").getValue(String.class);
 
-                       if(budReq.getRequestType().equals(mCurrent_user.getUid().toString())){
-                           rateUser.setRating(rating.getRating());
-                           rateUser.setUniqID(budReq.getUniqueIdentifier().toString());
-                           //uniqueID = budReq.getUniqueIdentifier().toString();
-                           databaseReference.child("ratings").child(targetBud).push().setValue(rateUser);
-                       }
-                       else {
-                           Log.d("Check rating", "Checked");
-                           databaseReference.child("ratings").child(senderID).push().setValue(rateUser);
-                       }
-                   }
-               } else {
-                   acceptBuddy.setVisibility(View.GONE);
-               }
-           }
+                    for (final DataSnapshot ds : dataSnapshot.getChildren()) {
+                        String theUser = ds.child("requestType").getValue(String.class);
 
-           @Override
-           public void onCancelled(DatabaseError databaseError) {
+                        if (theUser.equals(mCurrent_user.getUid().toString())) {
+                            ds.child("requestType").getRef().setValue("empty").addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Toast.makeText(MapsActivity.this, "You denied a buddy.", Toast.LENGTH_LONG).show();
+                                    ds.child("receiverReply").getRef().setValue("deny").addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            mMap.clear();
+                                            denyBuddy.setVisibility(View.INVISIBLE);
 
-           }
-       });
-   }
+                                            acceptBuddy.setVisibility(View.INVISIBLE);
+                                            lookForBuddy.setVisibility(View.VISIBLE);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                } else {
+                    denyBuddy.setVisibility(View.INVISIBLE);
+                    acceptBuddy.setVisibility(View.INVISIBLE);
+                    mTextViewCountdown.setVisibility(View.GONE);
+                }
+            }
 
-   public void rateBuddy2() {
-       mBuddyReqDB.addListenerForSingleValueEvent(new ValueEventListener() {
-           @Override
-           public void onDataChange(DataSnapshot dataSnapshot) {
-               if(dataSnapshot.exists()){
-                   for(DataSnapshot ds : dataSnapshot.getChildren()){
-                       String theUser = ds.child("uniqueIdentifier").getValue(String.class);
-                       String reply = ds.child("receiverReply").getValue(String.class);
-                       Rating rateUser = new Rating();
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-                       if(theUser.equals(mCurrent_user.getUid().toString()) && reply.equals("yes")){
-                           targetBud = ds.child("requestType").getValue(String.class);
+            }
+        });
+    }
 
-                           rateUser.setRating(rating.getRating());
-                           rateUser.setUniqID(targetBud);
-                           databaseReference.child("ratings").child(targetBud).push().setValue(rateUser);
+    public void rateBuddy1() {
+        refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
+        refDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
 
-                           avgRating();
-                           lookForBuddy.setVisibility(View.VISIBLE);
-                           rateBuddy.setVisibility(View.INVISIBLE);
-                           rating.setVisibility(View.INVISIBLE);
-                           acceptBuddy.setVisibility(View.INVISIBLE);
+                    Log.d("CheckforID", mCurrent_user.getUid().toString());
 
-                       } else {
-                           rateBuddy1();
-                           avgRating();
-                           lookForBuddy.setVisibility(View.VISIBLE);
-                           rateBuddy.setVisibility(View.INVISIBLE);
-                           rating.setVisibility(View.INVISIBLE);
-                           mTextViewCountdown.setVisibility(View.INVISIBLE);
-                           acceptBuddy.setVisibility(View.INVISIBLE);
-                       }
-                   }
-               }
-               //add ratebuddy1 here..
-           }
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        Buddy_req budReq = ds.getValue(Buddy_req.class);
+                        Rating rateUser = new Rating();
 
-           @Override
-           public void onCancelled(DatabaseError databaseError) {
+                        if (budReq.getRequestType().equals(mCurrent_user.getUid().toString())) {
+                            rateUser.setRating(rating.getRating());
+                            rateUser.setUniqID(budReq.getUniqueIdentifier().toString());
 
-           }
-       });
-   }
+                            databaseReference.child("ratings").child(senderID).push().setValue(rateUser);
+                        } else {
+                            Log.d("Check rating", "Checked");
+                        }
+                    }
+                } else {
+                    acceptBuddy.setVisibility(View.GONE);
+                }
+            }
 
-   public void avgRating() {
-       databaseReference.child("ratings").child(mCurrent_user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
-           @Override
-           public void onDataChange(DataSnapshot dataSnapshot) {
-               double total = 0;
-               double count = 0;
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-               if(dataSnapshot.exists()) {
-                   for (DataSnapshot ds : dataSnapshot.getChildren()){
-                      double rating = Double.parseDouble(ds.child("rating").getValue().toString());
-                      total = total + rating;
-                      count = count + 1;
-                      average = total / count;
-                      average = Math.round(average * 100);
-                      average = average/100;
+            }
+        });
+    }
 
-                       ds.child("averageRating").getRef().setValue(average);
-                   }
+    public void rateBuddy2() {
+        mBuddyReqDB.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        Buddy_req budReq = ds.getValue(Buddy_req.class);
+                        Rating rateUser = new Rating();
 
-                   final DatabaseReference newRef = FirebaseDatabase.getInstance().getReference().child("users");;
-                   newRef.child(mCurrent_user.getUid()).child("ratingAvg").setValue(average);
+                        if (budReq.getUniqueIdentifier().equals(mCurrent_user.getUid().toString())) {
+                            rateUser.setRating(rating.getRating());
+                            rateUser.setUniqID(targetBud);
+                            databaseReference.child("ratings").child(targetBud).push().setValue(rateUser);
 
-                   Log.d("TheAvgRating", String.valueOf(average));
-               } else {
-                   Log.d("AverageRating", "Empty");
-               }
-           }
+                            avgRating();
+                            lookForBuddy.setVisibility(View.VISIBLE);
+                            rateBuddy.setVisibility(View.INVISIBLE);
+                            rating.setVisibility(View.INVISIBLE);
+                            acceptBuddy.setVisibility(View.INVISIBLE);
 
-           @Override
-           public void onCancelled(DatabaseError databaseError) {
+                        } else {
+                            rateBuddy1();
+                            avgRating();
+                            lookForBuddy.setVisibility(View.VISIBLE);
+                            rateBuddy.setVisibility(View.INVISIBLE);
+                            rating.setVisibility(View.INVISIBLE);
+                            mTextViewCountdown.setVisibility(View.INVISIBLE);
+                            acceptBuddy.setVisibility(View.INVISIBLE);
+                        }
+                    }
+                } else {
+                    Rating rateUser = new Rating();
+                    rateUser.setRating(rating.getRating());
+                    rateUser.setUniqID(senderID);
+                    databaseReference.child("ratings").child(senderID).push().setValue(rateUser);
+                    lookForBuddy.setVisibility(View.VISIBLE);
+                    rateBuddy.setVisibility(View.INVISIBLE);
+                    rating.setVisibility(View.INVISIBLE);
+                    mTextViewCountdown.setVisibility(View.INVISIBLE);
+                    acceptBuddy.setVisibility(View.INVISIBLE);
+                }
+            }
 
-           }
-       });
-   }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-   public void startTimer() {
-       refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
-       refDatabase.addValueEventListener(new ValueEventListener() {
-           @Override
-           public void onDataChange(DataSnapshot dataSnapshot) {
-               if(dataSnapshot.exists()){
+            }
+        });
+    }
 
-                   Log.d("CheckforID", mCurrent_user.getUid().toString());
+    public void avgRating() {
+        databaseReference.child("ratings").child(mCurrent_user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                double total = 0;
+                double count = 0;
 
-                   for (DataSnapshot ds : dataSnapshot.getChildren()){
-                       Buddy_req budReq = ds.getValue(Buddy_req.class);
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        double rating = Double.parseDouble(ds.child("rating").getValue().toString());
+                        total = total + rating;
+                        count = count + 1;
+                        average = total / count;
+                        average = Math.round(average * 100);
+                        average = average / 100;
 
-                       if(budReq.getRequestType().equals(mCurrent_user.getUid().toString()) && budReq.getTimer() > 0 && budReq.receiverReply.equals("yes")){
-                           Toast.makeText(MapsActivity.this, "Timer will be displayed", Toast.LENGTH_SHORT).show();
+                        ds.child("averageRating").getRef().setValue(average);
+                    }
 
-                           //countdowntimer start
-                           //Double.valueOf(budReq.getTimer()).longValue()
-                           Log.d("TimerBeforeCountDown: ", String.valueOf(budReq.getTimer()));
-                           mCountDownTimer = new CountDownTimer(Double.valueOf(budReq.getTimer()).longValue(), 1000) {
-                               @Override
-                               public void onTick(long millisUntilFinished) {
+                    final DatabaseReference newRef = FirebaseDatabase.getInstance().getReference().child("users");
+                    ;
+                    newRef.child(mCurrent_user.getUid()).child("ratingAvg").setValue(average);
+
+                    Log.d("TheAvgRating", String.valueOf(average));
+                } else {
+                    Log.d("AverageRating", "Empty");
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void startTimer() {
+        refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
+        refDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+
+                    Log.d("CheckforID", mCurrent_user.getUid().toString());
+
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        Buddy_req budReq = ds.getValue(Buddy_req.class);
+
+                        if (budReq.getRequestType().equals(mCurrent_user.getUid().toString()) && budReq.receiverReply.equals("yes") && budReq.getTimer() > 0) {
+                            Toast.makeText(MapsActivity.this, "Timer will be displayed", Toast.LENGTH_SHORT).show();
+
+                            //countdowntimer start
+                            //Double.valueOf(budReq.getTimer()).longValue()
+                            Log.d("TimerBeforeCountDown: ", String.valueOf(budReq.getTimer()));
+                            mCountDownTimer = new CountDownTimer(Double.valueOf(budReq.getTimer()).longValue(), 1000) {
+                                @Override
+                                public void onTick(long millisUntilFinished) {
                                     mTimeLeftInMillis = millisUntilFinished;
                                     updateCountDownText();
-                               }
+                                }
 
-                               @Override
-                               public void onFinish() {
+                                @Override
+                                public void onFinish() {
 
-                               }
-                           }.start();
+                                }
+                            }.start();
 
-                           mTextViewCountdown.setVisibility(View.VISIBLE);
-                       }
-                       else {
-                           Toast.makeText(MapsActivity.this, "Timer not ready...", Toast.LENGTH_SHORT).show();
-                       }
-                   }
-               } else {
-                   acceptBuddy.setVisibility(View.GONE);
+                            mTextViewCountdown.setVisibility(View.VISIBLE);
+                        }
+                    }
+                } else {
+                    acceptBuddy.setVisibility(View.GONE);
 
-               }
-           }
+                }
+            }
 
-           @Override
-           public void onCancelled(DatabaseError databaseError) {
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-           }
-       });
-   }
+            }
+        });
+    }
 
-   public void updateCountDownText(){
-       int minutes = (int) (mTimeLeftInMillis / 1000) / 60;     //minutes
-       int seconds = (int) (mTimeLeftInMillis / 1000) % 60;     //seconds
+    public void updateCountDownText() {
+        int minutes = (int) (mTimeLeftInMillis / 1000) / 60;     //minutes
+        int seconds = (int) (mTimeLeftInMillis / 1000) % 60;     //seconds
 
-       String timeLeftFormatted = String.format(Locale.getDefault(),"%02d:%02d", minutes, seconds);
-       mTextViewCountdown.setText(timeLeftFormatted);
-   }
+        String timeLeftFormatted = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
+        mTextViewCountdown.setText(timeLeftFormatted);
+    }
 
-   public void searchForBuddy(){
-       String prefDistance = editDistancePref.getText().toString().trim();
-       final String exerciseType = editExerciseType.getSelectedItem().toString();
+    public void searchForBuddy() {
+        final String prefDistance = editDistancePref.getText().toString().trim();
+        final String exerciseType = editExerciseType.getSelectedItem().toString();
 
-       mTextViewCountdown.setVisibility(textView.INVISIBLE);
+        mTextViewCountdown.setVisibility(textView.INVISIBLE);
 
-       refDatabase = FirebaseDatabase.getInstance().getReference().child("users");
-       refDatabase.orderByChild("availability").equalTo("yes").addListenerForSingleValueEvent(new ValueEventListener() {
-           @Override
-           public void onDataChange(DataSnapshot dataSnapshot) {
-               if (dataSnapshot.exists()) {
-                   //refreshes the map
-                   mMap.clear();
-                   listOfUsers.clear();
+        refDatabase = FirebaseDatabase.getInstance().getReference().child("users");
+        refDatabase.orderByChild("availability").equalTo("yes").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    //refreshes the map
+                    mMap.clear();
+                    listOfUsers.clear();
 
-                   for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                       UserInformation userInfo = ds.getValue(UserInformation.class);
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        UserInformation userInfo = ds.getValue(UserInformation.class);
 
-                       if (userInfo.getExerciseType().equals(exerciseType)) {
-                           double mylat = userInfo.getLatitude();
-                           double mylong = userInfo.getLongtitude();
-                           String exTitle = ds.child("userName").getValue(String.class);
-                           Double userRating = ds.child("ratingAvg").getValue(Double.class);
+                        if (userInfo.getExerciseType().equals(exerciseType)) {
+                            double mylat = userInfo.getLatitude();
+                            double mylong = userInfo.getLongtitude();
+                            String exTitle = ds.child("userName").getValue(String.class);
+                            Double userRating = ds.child("ratingAvg").getValue(Double.class);
 
-                           String forUNameList = ds.child("userName").getValue(String.class);
+                            String forUNameList = ds.child("userName").getValue(String.class);
 
-                           if(!listOfUsers.contains(forUNameList)){
-                               listOfUsers.add(forUNameList);
-                           }
+                            if (!listOfUsers.contains(forUNameList)) {
+                                listOfUsers.add(forUNameList);
+                                listOfUsers.remove(uName);
+                            }
 
-                           Log.d("List of Users: ", listOfUsers.toString());
+                            Log.d("List of Users: ", listOfUsers.toString());
 
-                           LatLng newLocation = new LatLng(mylat, mylong);
+                            LatLng newLocation = new LatLng(mylat, mylong);
 
-                           //arrayLatLng.add(newLocation);
-                           //Log.d("ARRAY OF LATLNG", arrayLatLng.toString());
+                            //arrayLatLng.add(newLocation);
+                            //Log.d("ARRAY OF LATLNG", arrayLatLng.toString());
 
-                           Log.d("New Location: ", newLocation.toString());
+                            Log.d("New Location: ", newLocation.toString());
 
 
-                           LatLng myLatLang = new LatLng(uLatt, uLongt);
-                           Log.d("My Location: ", myLatLang.toString());
+                            LatLng myLatLang = new LatLng(uLatt, uLongt);
+                            Log.d("My Location: ", myLatLang.toString());
 
-                           MarkerOptions markerOptions = new MarkerOptions();
-                           markerOptions.position(newLocation);
-                           markerOptions.title(exTitle + ", " + userRating);
-                           markerOptions.visible(false);
+                            MarkerOptions markerOptions = new MarkerOptions();
+                            markerOptions.position(newLocation);
+                            markerOptions.title(exTitle + ", " + userRating);
+                            markerOptions.visible(false);
 
-                           Marker locationMarker = mMap.addMarker(markerOptions);
+                            Marker locationMarker = mMap.addMarker(markerOptions);
 
-                           if (SphericalUtil.computeDistanceBetween(myLatLang, locationMarker.getPosition()) < 1000000) {
-                               locationMarker.setVisible(true);
-                           }
+                            if (SphericalUtil.computeDistanceBetween(myLatLang, locationMarker.getPosition()) < Double.parseDouble(prefDistance)) {
+                                locationMarker.setVisible(true);
+                            }
 
-                           //LatLng sampleLatLang = new LatLng(53.291492, -6.3635647);
+                            //LatLng sampleLatLang = new LatLng(53.291492, -6.3635647);
 
-                           //getRouteToMarker(newLocation);
+                            //getRouteToMarker(newLocation);
 
-                           mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLang, 11.2f));
-                       }
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLang, 11.2f));
+                        }
 
-                   }
-               }
+                    }
+                }
 
-               ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_list_item_1,listOfUsers);
-               adapter.notifyDataSetChanged();
-               lv.setAdapter(adapter);
-               lv.setVisibility(View.VISIBLE);
-           }
+                ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, listOfUsers);
+                adapter.notifyDataSetChanged();
+                lv.setAdapter(adapter);
+                lv.setVisibility(View.VISIBLE);
+            }
 
-           @Override
-           public void onCancelled(DatabaseError databaseError) {
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-           }
-       });
-   }
+            }
+        });
+    }
 
-   //get the unique ID of the clicked user
-    public void getUniqueID(String listviewdata){
+    //get the unique ID of the clicked user
+    public void getUniqueID(String listviewdata) {
         refDatabase = FirebaseDatabase.getInstance().getReference().child("users");
         refDatabase.orderByChild("userName").equalTo(listviewdata).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -931,10 +974,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 if (dataSnapshot.exists()) {
                     result.clear();
-                    for(DataSnapshot ds : dataSnapshot.getChildren()) {
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
                         Buddy_req buddy_req = new Buddy_req();
 
-                        if(ds.child("availability").getValue(String.class).equals("no")){
+                        if (ds.child("availability").getValue(String.class).equals("no")) {
                             Toast.makeText(MapsActivity.this, "User not available.", Toast.LENGTH_SHORT).show();
                         } else {
                             result1 = ds.child("uniqueID").getValue(String.class);
@@ -959,13 +1002,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     refDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(DataSnapshot dataSnapshot) {
-                                            if (dataSnapshot.exists()){
-                                                for(DataSnapshot ds : dataSnapshot.getChildren()) {
-                                                    if(ds.child("uniqueID").getValue(String.class).equals(mCurrent_user.getUid().toString())) {
+                                            if (dataSnapshot.exists()) {
+                                                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                                                    if (ds.child("uniqueID").getValue(String.class).equals(mCurrent_user.getUid().toString())) {
                                                         ds.child("availability").getRef().setValue("no");
                                                     }
 
-                                                    if(ds.child("uniqueID").getValue(String.class).equals(finalResult)) {
+                                                    if (ds.child("uniqueID").getValue(String.class).equals(finalResult)) {
                                                         ds.child("availability").getRef().setValue("no");
                                                     }
                                                 }
@@ -984,7 +1027,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     }
                 }
-            };
+            }
+
+            ;
+
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
@@ -1004,9 +1050,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onRoutingFailure(RouteException e) {
-        if(e != null) {
+        if (e != null) {
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }else {
+        } else {
             Toast.makeText(this, "Something went wrong, Try again", Toast.LENGTH_SHORT).show();
         }
     }
@@ -1019,7 +1065,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onRoutingSuccess(ArrayList<Route> route, int shortestRouteIndex) {
         //long duration;
-        if(polylines.size()>0) {
+        if (polylines.size() > 0) {
             for (Polyline poly : polylines) {
                 poly.remove();
             }
@@ -1027,7 +1073,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         polylines = new ArrayList<>();
         //add route(s) to the map.
-        for (int i = 0; i <route.size(); i++) {
+        for (int i = 0; i < route.size(); i++) {
             PolylineOptions polyOptions = new PolylineOptions();
             polyOptions.color(Color.RED);
             polyOptions.width(4);
@@ -1035,11 +1081,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Polyline polyline = mMap.addPolyline(polyOptions);
             polylines.add(polyline);
 
-            Toast.makeText(getApplicationContext(),"Route "+ (i+1) +": distance - "+ route.get(i).getDistanceValue()+": duration - "+ route.get(i).getDurationValue(),Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Route " + (i + 1) + ": distance - " + route.get(i).getDistanceValue() + ": duration - " + route.get(i).getDurationValue(), Toast.LENGTH_SHORT).show();
 
             routeTimer = route.get(i).getDurationValue();
 
-            refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
+            /*refDatabase = FirebaseDatabase.getInstance().getReference().child("buddyReq");
             refDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -1068,7 +1114,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onCancelled(DatabaseError databaseError) {
 
                     }
-                });
+                });*/
         }
 
     }
@@ -1084,7 +1130,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         refDatabase.orderByChild("uniqueID").equalTo(buddy).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
+                if (dataSnapshot.exists()) {
                     for (DataSnapshot ds : dataSnapshot.getChildren()) {
                         UserInformation userInfo = ds.getValue(UserInformation.class);
                         double mylat = userInfo.getLatitude();
