@@ -65,6 +65,9 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="24dp"
         android:text="Start"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/buttons"
+        android:theme="@style/MyButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/distance" />
 
@@ -75,6 +78,9 @@
         android:layout_marginEnd="8dp"
         android:layout_marginTop="24dp"
         android:text="Stop"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/buttons"
+        android:theme="@style/MyButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/calBurned" />
 
@@ -82,26 +88,34 @@
         android:id="@+id/goMaps"
         android:layout_width="160dp"
         android:layout_height="50dp"
-        android:layout_marginEnd="92dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
-        android:text="Look For Buddy"
+        android:layout_marginTop="28dp"
+        android:background="@drawable/buttons"
         android:gravity="center"
+        android:text="Look For Buddy"
+        android:textColor="#FFFFFF"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.793"
+        app:layout_constraintHorizontal_bias="0.458"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/start" />
 
     <Button
         android:id="@+id/logoutBtn"
-        android:layout_width="285dp"
-        android:layout_height="69dp"
+        android:layout_width="160dp"
+        android:layout_height="50dp"
         android:layout_marginBottom="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="32dp"
+        android:background="@drawable/buttons"
         android:text="Logout"
+        android:textColor="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.458"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/goMaps" />
+        app:layout_constraintTop_toBottomOf="@+id/goMaps"
+        app:layout_constraintVertical_bias="1.0" />
 
 </android.support.constraint.ConstraintLayout>
